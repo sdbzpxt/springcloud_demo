@@ -1,0 +1,17 @@
+server:
+  port: 3344
+
+spring:
+  application:
+    name: cloud-config-service
+
+eureka:
+  client:
+    register-with-eureka: true    #标识向注册中心注册自己
+    fetch-registry: true
+    service-url:
+      #defaultZone: http://demo:123abc@eureka7001.com:7001/eureka,http://demo:123abc@eureka7002.com:7002/eureka
+      defaultZone: http://demo:123abc@eureka7001.com:7001/eureka
+  instance:
+    instance-id: ${spring.application.name}:${spring.cloud.client.ip-address}:${server.port}
+    prefer-ip-address: true

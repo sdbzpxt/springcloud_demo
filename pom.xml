@@ -20,6 +20,7 @@
       <module>cloud-provider-hystrix-payment8002</module>
       <module>cloud-hystrix-dashboard9001</module>
       <module>cloud-gateway9527</module>
+    <module>cloud-config-service3344</module>
   </modules>
   <packaging>pom</packaging><!--父工程必须是pom格式-->
 
