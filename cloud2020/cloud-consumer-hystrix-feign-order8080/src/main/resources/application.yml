@@ -1,0 +1,72 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: hystrix-feign-order-service
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    driver-class-name: org.gjt.mm.mysql.Driver
+    url: jdbc:mysql://127.0.0.1:3306/cloud_order?useUnicode=true&characterEncoding=utf-8&useSSL=false
+    username: root
+    password: 123456
+  main:
+    allow-bean-definition-overriding: true
+eureka:
+  client:
+    register-with-eureka: true    #标识向注册中心注册自己
+    fetch-registry: true
+    service-url:
+      #defaultZone: http://demo:123abc@eureka7001.com:7001/eureka,http://demo:123abc@eureka7002.com:7002/eureka
+      defaultZone: http://demo:123abc@eureka7001.com:7001/eureka
+  instance:
+    instance-id: ${spring.application.name}:${spring.cloud.client.ip-address}:${server.port}
+    prefer-ip-address: true
+
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.peng.springcloud.entities #所有entity别名类所在包
+
+feign:
+  hystrix:
+    enabled: true              #Feign的默认配置，是不启用hystrix 并且Feign的底层是调用ribbon来实现负载均衡的，所以为了不和ribbon的重试机制冲突因此也不会启用重试机制
+
+ribbon:
+  ReadTimeout: 5000               #处理请求的超时时间，默认为1秒
+  ConnectTimeout: 3000            #连接建立的超时时长，默认1秒
+  MaxAutoRetries: 1               #同一台实例的最大重试次数，但是不包括首次调用，默认为1次
+  MaxAutoRetriesNextServer: 0     #重试负载均衡其他实例的最大重试次数，不包括首次调用，默认为0次
+  OkToRetryOnAllOperations: false #是否对所有操作都重试，默认false
+
+hystrix:
+  command:
+    default:
+      execution:
+        timeout:
+          enable: true             #为false则超时控制有ribbon控制，为true则hystrix超时和ribbon超时都是用，但是谁小谁生效，默认为true
+        isolation:
+          thread:
+            timeoutInMilliseconds: 10000  #熔断器的超时时长默认1秒，最常修改的参数
+
+#  OpenFeign超时时长设置及详解
+#  概念明确：
+#  1 hystrix可配置的部分
+#  hystrix.command.default.execution.timeout.enable=true //为false则超时控制有ribbon控制，为true则hystrix超时和ribbon超时都是用，但是谁小谁生效，默认为true
+#  hystrix.command.default.execution.isolation.thread.timeoutInMilliseconds=3000//熔断器的超时时长默认1秒，最常修改的参数
+#  circuitBreaker.requestVolumeThreshold=20 //触发熔断的最小请求次数，默认为20
+#  circuitBreaker.sleepWindowInMilliseconds=5000 //休眠时长，默认为5秒
+#  circuitBreaker.errorThresholdPercentage=50 //触发熔断的失败请求最小占比，默认50%
+#
+#  2 ribbon的可配置部分
+#
+#  ribbon.ReadTimeout=1000 //处理请求的超时时间，默认为1秒
+#  ribbon.ConnectTimeout=1000 //连接建立的超时时长，默认1秒
+#  ribbon.MaxAutoRetries=1 //同一台实例的最大重试次数，但是不包括首次调用，默认为1次
+#  ribbon.MaxAutoRetriesNextServer=0 //重试负载均衡其他实例的最大重试次数，不包括首次调用，默认为0次
+#  ribbon.OkToRetryOnAllOperations=false //是否对所有操作都重试，默认false
+#  3 Feign的可配置部分
+#
+#  feign.hystrix.enabled=false //Feign是否启用断路器,默认为false
+#  feign.client.config.default.connectTimeout=10000 //Feign的连接建立超时时间，默认为10秒
+#  feign.client.config.default.readTimeout=60000 //Feign的请求处理超时时间，默认为60
+#  feign.client.config.default.retryer=feign.Retryer.Default //Feign使用默认的超时配置，在该类源码中可见，默认单次请求最大时长1秒，重试5次
